@@ -22,7 +22,7 @@ function adjustPossibleCents(value) {
   let n = Number(value);
   if (!Number.isFinite(n)) return null;
   if (Number.isInteger(n) && n > 1000 && n <= 500000) {
-    n = n / 100; // converter centavos para reais
+    n = n / 100;
   }
   return normalizeCurrency(n);
 }
@@ -58,7 +58,6 @@ function extractJsonLdProduct($) {
         }
       }
     } catch (_) {
-      // ignore parse errors
     }
   }
   return null;
@@ -72,7 +71,6 @@ function extractMetaPrice($) {
 }
 
 function guessInstallments($) {
-  // Busca um padrão de "12x de R$ 199,90" e cria total parcelado
   const bodyText = $('body').text();
   const regex = /(\d{1,2})\s*[xX]\s*(?:de)?\s*R\$\s*([0-9\.,]+)/;
   const m = bodyText.match(regex);
@@ -87,7 +85,6 @@ function guessInstallments($) {
 }
 
 function priceNearKeywords($) {
-  // Procura padrões como "à vista R$ 1.234,56" ou "no pix R$ ..."
   const text = $('body').text();
   const vistaRegex = /(à\s*vista|no\s*pix|boleto)[^\n]{0,80}?R\$\s*([0-9\.,]+)/i;
   const m = text.match(vistaRegex);
@@ -99,7 +96,6 @@ function priceNearKeywords($) {
 }
 
 function pixPriceFromContext($) {
-  // Heurística focada em PIX: procura valor explicitamente rotulado como PIX/à vista
   const text = $('body').text().replace(/\s+/g, ' ');
   const patterns = [
     /(no\s*pix|pix)[^\n]{0,60}?R\$\s*([0-9\.,]+)/i,
@@ -125,13 +121,11 @@ function extractAllBRL($) {
     const v = parsePriceToNumber(m[1]);
     if (v && v > 1) values.push(v);
   }
-  // normaliza e deduplica
   const uniq = Array.from(new Set(values.map(v => normalizeCurrency(v))));
   return uniq.sort((a, b) => a - b);
 }
 
 function extractNextData($) {
-  // Páginas em Next.js (ex.: Pichau) costumam ter __NEXT_DATA__ com o estado inicial
   const el = $('script#__NEXT_DATA__').first();
   if (!el || el.length === 0) return null;
   try {
@@ -154,10 +148,8 @@ function collectNumbersFromKeys(node, keysLower) {
           let n = null;
           if (typeof v === 'string') n = parsePriceToNumber(v);
           else if (typeof v === 'number') n = v;
-          // Heurística: muitos backends guardam preço em centavos
           if (n && Number.isFinite(n)) {
             if (n > 1000 && Number.isInteger(n) && n <= 500000) {
-              // 1.000 a 500.000 (centavos) => converte para reais
               n = n / 100;
             }
             if (n > 0.05) found.push(normalizeCurrency(n));
@@ -171,7 +163,6 @@ function collectNumbersFromKeys(node, keysLower) {
 }
 
 function extractInstallmentsFromTree(node) {
-  // Procura estruturas com { quantity, value } ou listas de parcelas
   const candidates = [];
   const stack = [node];
   while (stack.length) {
@@ -187,7 +178,7 @@ function extractInstallmentsFromTree(node) {
       let val = cur.value ?? cur.amount;
       if (typeof val === 'string') val = parsePriceToNumber(val);
       if (typeof val === 'number' && val > 1000 && Number.isInteger(val) && val <= 500000) {
-        val = val / 100; // centavos
+        val = val / 100;
       }
       if (qty > 1 && val) candidates.push(normalizeCurrency(qty * val));
     }
@@ -233,16 +224,12 @@ function kabumExtractor($) {
 }
 
 function mercadoLivreExtractor($) {
-  // Mercado Livre usa JSON-LD robusto
   const product = extractJsonLdProduct($);
   let price = null;
   let parceladoTotal = null;
 
-  // Mercado Livre retorna valores JÁ EM REAIS no JSON-LD, não centavos
   const bodyText = $('body').text();
   
-  // Busca padrão específico: valor grande seguido de "no Pix" ou antes de "no Pix"
-  // Ex: "3.558" ou "R$ 3.558" antes de "no Pix"
   const pixPatterns = [
     /R\$\s*([0-9]{1,2}(?:\.[0-9]{3})*(?:,[0-9]{2})?)[^0-9]*(?:no\s+Pix|Pix|pix)/i,
     /([0-9]{1,2}(?:\.[0-9]{3})*)\s*(?:no\s+Pix|Pix|pix)/i,
@@ -252,41 +239,37 @@ function mercadoLivreExtractor($) {
     const match = bodyText.match(pattern);
     if (match) {
       const p = parsePriceToNumber(match[1]);
-      if (p && p >= 500) { // Preços de iPhone são grandes
-        price = p; // Já está em reais
+      if (p && p >= 500) {
+        price = p;
         break;
       }
     }
   }
   
-  // Busca parcelado: "em 10x R$ 395,33 sem juros" = total 10 * 395,33 = 3.953,33
   const parcelMatch = bodyText.match(/(?:em|até)\s*(\d{1,2})x[^R]*R\$\s*([0-9\.,]+)[^R]*(?:sem juros|juros)/i);
   if (parcelMatch) {
     const qty = parseInt(parcelMatch[1], 10);
     const each = parsePriceToNumber(parcelMatch[2]);
     if (qty > 1 && each) {
-      parceladoTotal = qty * each; // Já está em reais
+      parceladoTotal = qty * each;
     }
   }
   
-  // Se não encontrou via texto, tenta JSON-LD (valores já em reais)
   if (!price && product && product.offers) {
     const offers = Array.isArray(product.offers) ? product.offers[0] : product.offers;
     const mainPrice = parsePriceToNumber(offers.price || offers.lowPrice);
     if (mainPrice && mainPrice >= 100) {
-      price = mainPrice; // Já está em reais, NÃO divide por 100
+      price = mainPrice;
     }
     if (offers.highPrice && !parceladoTotal) {
       const hp = parsePriceToNumber(offers.highPrice);
       if (hp && hp > (price || 0) * 1.05) {
-        parceladoTotal = hp; // Já está em reais
+        parceladoTotal = hp;
       }
     }
   }
 
-  // Tenta buscar no HTML com classes específicas do ML (preço principal)
   if (!price) {
-    // Classes principais do ML para o preço à vista
     const priceSelectors = [
       '[data-testid="price"]',
       '.ui-pdp-price__second-line .andes-money-amount__fraction',
@@ -298,7 +281,7 @@ function mercadoLivreExtractor($) {
       if (el.length) {
         const txt = el.text().trim();
         const p = parsePriceToNumber(txt);
-        if (p && p > 100) { // Ignora valores muito pequenos (frete, etc)
+        if (p && p > 100) {
           price = p;
           break;
         }
@@ -306,23 +289,19 @@ function mercadoLivreExtractor($) {
     }
   }
 
-  // Fallback: busca padrão genérico de parcelas
   if (!parceladoTotal) parceladoTotal = guessInstallments($);
 
-  // Último fallback: extrai todos os preços grandes
   if (!price || !parceladoTotal) {
     const all = extractAllBRL($);
-    const filtered = all.filter(v => v >= 500 && v <= 50000); // Valores razoáveis para produtos grandes
+    const filtered = all.filter(v => v >= 500 && v <= 50000);
     if (filtered.length > 0) {
       if (!price) price = filtered[0];
       if (!parceladoTotal && filtered.length >= 2) {
-        parceladoTotal = filtered[filtered.length - 1]; // Maior valor como parcelado
+        parceladoTotal = filtered[filtered.length - 1];
       }
     }
   }
 
-  // Mercado Livre NÃO precisa de adjustPossibleCents - valores já estão em reais
-  // Só normaliza para 2 casas decimais
   price = price ? normalizeCurrency(price) : null;
   parceladoTotal = parceladoTotal ? normalizeCurrency(parceladoTotal) : null;
 
@@ -340,7 +319,6 @@ function pichauExtractor($) {
   if (!price) price = pixPriceFromContext($) || priceNearKeywords($);
   if (price) price = adjustPossibleCents(price);
 
-  // Next.js data
   if (!price) {
     const nextData = extractNextData($);
     if (nextData) {
@@ -377,7 +355,6 @@ function genericExtractor($) {
   }
   if (!price) price = extractMetaPrice($);
   if (!price) price = priceNearKeywords($);
-  // como fallback final, pega o menor preço visto na página como "à vista"
   if (!price) {
     const all = extractAllBRL($);
     if (all.length) price = all[0];
@@ -416,14 +393,11 @@ async function scrapeProduct(targetUrl) {
     }
   };
 
-  // Se só encontrarmos um dos preços, tentar inferir
   if (result.priceVista == null && result.priceParcelado != null) {
-    // Muitas lojas dão desconto à vista; assumir 5% desconto como fallback conservador
     result.priceVista = normalizeCurrency(result.priceParcelado * 0.95);
     result.source.inferred = 'vista_from_parcelado_5pct_discount';
   }
   if (result.priceParcelado == null && result.priceVista != null) {
-    // Como fallback, considerar preço parcelado igual ao preço base
     result.priceParcelado = result.priceVista;
     result.source.inferred = 'parcelado_equals_vista_fallback';
   }

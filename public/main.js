@@ -1,11 +1,10 @@
 const state = {
-  items: [] // { id, name, url, qty, priceVista, priceParcelado, title, hostname }
+  items: []
 };
 
-// Cache local (evitar backend repetido)
 const CACHE_KEY = 'priceCacheV1';
 const ITEMS_KEY = 'budgetItemsV1';
-const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24h
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
 function readCache() {
   try { return JSON.parse(localStorage.getItem(CACHE_KEY) || '{}'); } catch { return {}; }
@@ -27,16 +26,9 @@ function setCachedPrice(url, data) {
 function sanitizePrice(v) {
   if (v == null || !Number.isFinite(v)) return null;
   let n = Number(v);
-  // IMPORTANTE: Valores >= 500 são SEMPRE em reais (ex: 3558 = R$ 3.558,00)
-  // Nunca converte valores >= 500 - são sempre preços em reais
-  // Só converte valores muito pequenos (50-499) que podem estar em centavos
-  // Ex: 355 centavos = R$ 3,55, mas isso é raro
-  // Regra conservadora: só converte se for inteiro pequeno (< 500)
   if (Number.isInteger(n) && n >= 50 && n < 500 && n % 100 !== 0) {
-    // Só produtos muito baratos podem ter valores como 355 centavos
     n = n / 100;
   }
-  // Valores >= 500 nunca são convertidos - sempre são reais
   return n;
 }
 
@@ -52,10 +44,8 @@ function recalc() {
   document.getElementById('sumVista').textContent = formatBRL(sumVista);
   document.getElementById('sumParcelado').textContent = formatBRL(sumParcelado);
   document.getElementById('countItems').textContent = String(state.items.length);
-  // Persistir itens
   try { localStorage.setItem(ITEMS_KEY, JSON.stringify(state.items)); } catch {}
 
-  // Totais por categoria
   const box = document.getElementById('byCategory');
   if (box) {
     const map = {};
@@ -191,7 +181,6 @@ function onAdd() {
   state.items.push(tempItem);
   render();
 
-  // Limpar campos após adicionar
   const nameInputEl = document.getElementById('name');
   const urlInputEl = document.getElementById('url');
   const qtyInputEl = document.getElementById('qty');
@@ -203,14 +192,12 @@ function onAdd() {
   fetchPrice(url)
     .then(data => {
       Object.assign(tempItem, data);
-      // Se o usuário não informou nome, usar o título apenas no item (não preenche input, pois foi limpo)
       if (!name && data.title) {
         tempItem.name = data.title;
       }
       render();
     })
     .catch(() => {
-      // Mantém item, mas usuário pode editar quantidade/valores manualmente no futuro (feature futura)
       render();
     });
 }
@@ -230,7 +217,6 @@ function onImport(file) {
       const txt = reader.result;
       let list;
       if (file.type === 'text/csv' || (typeof txt === 'string' && txt.trim().split('\n')[0].includes(','))) {
-        // CSV: nome,url,qty,categoria
         list = [];
         const lines = String(txt).split(/\r?\n/).filter(Boolean);
         for (const line of lines) {
@@ -254,7 +240,6 @@ function onImport(file) {
         hostname: x.hostname || null
       }));
       render();
-      // Se houver itens com preço nulo, tentar reconsultar automaticamente
       state.items.forEach(async (it) => {
         if (it.priceVista == null || it.priceParcelado == null) {
           try {
@@ -282,11 +267,10 @@ async function onRefresh() {
     btn.textContent = 'Atualizando...';
   }
   try {
-    // Atualiza todos os itens em paralelo, ignorando cache
     await Promise.all(state.items.map(async (it) => {
       if (!it.url) return;
       try {
-        const data = await fetchPrice(it.url, true); // ignoreCache = true
+        const data = await fetchPrice(it.url, true);
         if (!it.name && data.title) it.name = data.title;
         it.priceVista = sanitizePrice(data.priceVista);
         it.priceParcelado = sanitizePrice(data.priceParcelado);
@@ -311,7 +295,6 @@ document.getElementById('importInput').addEventListener('change', (e) => {
   if (e.target.files && e.target.files[0]) onImport(e.target.files[0]);
 });
 
-// Compartilhar link (URL hash)
 document.getElementById('shareBtn').addEventListener('click', async () => {
   try {
     const payload = btoa(unescape(encodeURIComponent(JSON.stringify(state.items))));
@@ -323,9 +306,6 @@ document.getElementById('shareBtn').addEventListener('click', async () => {
   }
 });
 
-// (Imprimir/PDF removido a pedido do usuário)
-
-// Preview de favicon ao digitar URL
 const urlInput = document.getElementById('url');
 const urlFav = document.getElementById('urlFavicon');
 function updateFaviconPreview() {
@@ -342,18 +322,15 @@ function updateFaviconPreview() {
 urlInput.addEventListener('input', updateFaviconPreview);
 updateFaviconPreview();
 
-// Atalho: Enter no campo URL adiciona
 urlInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') onAdd();
 });
 
-// Restaurar itens do cache local na inicialização
 try {
   const saved = JSON.parse(localStorage.getItem(ITEMS_KEY) || '[]');
   if (Array.isArray(saved)) state.items = saved;
 } catch {}
 
-// Carregar de URL compartilhada
 if (location.hash.startsWith('#d=')) {
   try {
     const json = decodeURIComponent(escape(atob(location.hash.slice(3))));
@@ -364,7 +341,6 @@ if (location.hash.startsWith('#d=')) {
 
 render();
 
-// Tabs Itens/Resumo
 const tabItemsBtn = document.getElementById('tabItemsBtn');
 const tabSummaryBtn = document.getElementById('tabSummaryBtn');
 const panelItems = document.getElementById('panel-items');

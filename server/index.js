@@ -8,7 +8,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Endpoint de scraping de preço
 app.get('/api/price', async (req, res) => {
   const url = req.query.url;
   if (!url) {
@@ -22,10 +21,8 @@ app.get('/api/price', async (req, res) => {
   }
 });
 
-// Export para Vercel (serverless)
 module.exports = app;
 
-// Para desenvolvimento local
 if (require.main === module) {
   const PORT = process.env.PORT || 3000;
   app.use('/', express.static(path.join(__dirname, '..', 'public')));
