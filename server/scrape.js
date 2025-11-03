@@ -198,7 +198,8 @@ function siteSpecificExtractors(hostname) {
   return {
     isKabum: host.includes('kabum.com.br'),
     isPichau: host.includes('pichau.com.br'),
-    isMercadoLivre: host.includes('mercadolivre.com.br')
+    isMercadoLivre: host.includes('mercadolivre.com.br'),
+    isAmazon: host.includes('amazon.com.br') || host.includes('amazon.br')
   };
 }
 
@@ -308,6 +309,91 @@ function mercadoLivreExtractor($) {
   return { priceVista: price, priceParcelado: parceladoTotal };
 }
 
+function amazonExtractor($) {
+  const product = extractJsonLdProduct($);
+  let price = null;
+  let parceladoTotal = null;
+
+  if (product && product.offers) {
+    const offers = Array.isArray(product.offers) ? product.offers[0] : product.offers;
+    const mainPrice = parsePriceToNumber(offers.price || offers.lowPrice || offers.highPrice);
+    if (mainPrice && mainPrice >= 10) {
+      price = mainPrice;
+      parceladoTotal = mainPrice;
+    }
+  }
+
+  if (!price) {
+    price = extractMetaPrice($);
+    if (price) parceladoTotal = price;
+  }
+
+  if (!price) {
+    const priceSelectors = [
+      '#priceblock_ourprice',
+      '#priceblock_dealprice',
+      '#priceblock_saleprice',
+      '.a-price.a-text-price .a-offscreen',
+      '[data-a-color="price"] .a-price-whole',
+      '.a-price .a-offscreen'
+    ];
+    for (const sel of priceSelectors) {
+      const el = $(sel).first();
+      if (el.length) {
+        let txt = el.text().trim();
+        if (sel.includes('.a-offscreen')) {
+          txt = txt.replace(/[^\d.,]/g, '');
+        } else if (sel === '[data-a-color="price"] .a-price-whole') {
+          const whole = txt.replace(/[^\d]/g, '');
+          const parent = el.closest('[data-a-color="price"], .a-price');
+          const fraction = parent.find('.a-price-fraction').first().text().trim().replace(/[^\d]/g, '');
+          txt = `${whole}.${fraction || '00'}`;
+        }
+        const p = parsePriceToNumber(txt);
+        if (p && p >= 10 && p <= 100000) {
+          price = p;
+          parceladoTotal = p;
+          break;
+        }
+      }
+    }
+  }
+
+  if (!price) {
+    const priceWhole = $('.a-price-whole').first();
+    const priceFraction = $('.a-price-fraction').first();
+    if (priceWhole.length && priceFraction.length) {
+      const whole = priceWhole.text().trim().replace(/[^\d]/g, '');
+      const fraction = priceFraction.text().trim().replace(/[^\d]/g, '');
+      if (whole) {
+        const fullPrice = `${whole}.${fraction}`;
+        const p = parsePriceToNumber(fullPrice);
+        if (p && p >= 10 && p <= 100000) {
+          price = p;
+          parceladoTotal = p;
+        }
+      }
+    }
+  }
+
+  if (!price) {
+    const all = extractAllBRL($);
+    const filtered = all.filter(v => v >= 10 && v <= 100000);
+    if (filtered.length > 0) {
+      price = filtered[0];
+      parceladoTotal = filtered[0];
+    }
+  }
+
+  if (price) price = adjustPossibleCents(price);
+  if (parceladoTotal) parceladoTotal = adjustPossibleCents(parceladoTotal);
+
+  return {
+    priceVista: price ? normalizeCurrency(price) : null,
+    priceParcelado: parceladoTotal ? normalizeCurrency(parceladoTotal) : null
+  };
+}
+
 function pichauExtractor($) {
   const product = extractJsonLdProduct($);
   let price = null;
@@ -374,12 +460,13 @@ async function scrapeProduct(targetUrl) {
   const $ = cheerio.load(html);
 
   const title = titleFromPage($);
-  const { isKabum, isPichau, isMercadoLivre } = siteSpecificExtractors(u.hostname);
+  const { isKabum, isPichau, isMercadoLivre, isAmazon } = siteSpecificExtractors(u.hostname);
 
   let extracted;
   if (isKabum) extracted = kabumExtractor($);
   else if (isPichau) extracted = pichauExtractor($);
   else if (isMercadoLivre) extracted = mercadoLivreExtractor($);
+  else if (isAmazon) extracted = amazonExtractor($);
   else extracted = genericExtractor($);
 
   const result = {
@@ -389,17 +476,28 @@ async function scrapeProduct(targetUrl) {
     priceParcelado: extracted.priceParcelado || null,
     source: {
       hostname: u.hostname,
-      strategy: isKabum ? 'kabum' : isPichau ? 'pichau' : isMercadoLivre ? 'mercadolivre' : 'generic'
+      strategy: isKabum ? 'kabum' : isPichau ? 'pichau' : isMercadoLivre ? 'mercadolivre' : isAmazon ? 'amazon' : 'generic'
     }
   };
 
-  if (result.priceVista == null && result.priceParcelado != null) {
-    result.priceVista = normalizeCurrency(result.priceParcelado * 0.95);
-    result.source.inferred = 'vista_from_parcelado_5pct_discount';
-  }
-  if (result.priceParcelado == null && result.priceVista != null) {
-    result.priceParcelado = result.priceVista;
-    result.source.inferred = 'parcelado_equals_vista_fallback';
+  if (isAmazon) {
+    if (result.priceVista == null && result.priceParcelado != null) {
+      result.priceVista = result.priceParcelado;
+      result.source.inferred = 'vista_equals_parcelado_amazon';
+    }
+    if (result.priceParcelado == null && result.priceVista != null) {
+      result.priceParcelado = result.priceVista;
+      result.source.inferred = 'parcelado_equals_vista_amazon';
+    }
+  } else {
+    if (result.priceVista == null && result.priceParcelado != null) {
+      result.priceVista = normalizeCurrency(result.priceParcelado * 0.95);
+      result.source.inferred = 'vista_from_parcelado_5pct_discount';
+    }
+    if (result.priceParcelado == null && result.priceVista != null) {
+      result.priceParcelado = result.priceVista;
+      result.source.inferred = 'parcelado_equals_vista_fallback';
+    }
   }
 
   return result;
