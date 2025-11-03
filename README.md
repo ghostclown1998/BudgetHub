@@ -35,14 +35,44 @@ Depois acesse `http://localhost:3000` no navegador.
   - **Parcelado**: assume igual ao à vista se não houver informação.
 - Para maior precisão, sempre confira os preços no site de origem antes de fechar a compra.
 
-## Estrutura
-- `server/index.js`: servidor Express, endpoint `GET /api/price?url=...`.
-- `server/scrape.js`: lógica de scraping (Kabum, Pichau e genérico).
-- `public/index.html` e `public/main.js`: interface web.
+## Deploy na Vercel
 
-## Extensões futuras
-- Scrapers específicos mais robustos (Terabyte, Amazon BR, etc.).
-- Suporte a edição manual de preços quando a coleta falhar.
-- Histórico de variação de preço.
+### Via CLI (recomendado)
+1. Instale a Vercel CLI: `npm i -g vercel`
+2. No diretório do projeto, execute:
+   ```bash
+   vercel
+   ```
+3. Siga as instruções (primeira vez) ou use `vercel --prod` para produção
+
+### Via GitHub
+1. Faça push do código para seu repositório
+2. Acesse [vercel.com](https://vercel.com)
+3. Importe o repositório
+4. A Vercel detecta automaticamente a configuração (`vercel.json`)
+5. Deploy automático a cada push
+
+### Estrutura de API
+- `api/price.js`: função serverless para `/api/price` (deploy na Vercel)
+- `server/index.js`: servidor Express para desenvolvimento local
+- `server/scrape.js`: lógica de scraping (Kabum, Pichau, Mercado Livre e genérico)
+- `public/`: arquivos estáticos do frontend
+
+## Estrutura
+- `api/price.js`: função serverless para Vercel
+- `server/index.js`: servidor Express local
+- `server/scrape.js`: lógica de scraping (Kabum, Pichau, Mercado Livre e genérico)
+- `public/index.html` e `public/main.js`: interface web
+- `vercel.json`: configuração de deploy
+
+## Funcionalidades
+- Coleta automática de preços de múltiplas lojas
+- Cache local (localStorage) para evitar requisições repetidas
+- Categorias e totais por categoria
+- Exportar/Importar JSON e CSV
+- Compartilhar orçamento via link
+- Edição manual de preços
+- Duplicar itens
+- Histórico local de preços
 
 

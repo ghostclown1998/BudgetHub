@@ -4,13 +4,9 @@ const path = require('path');
 const { scrapeProduct } = require('./scrape');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
-
-// Servir frontend estático
-app.use('/', express.static(path.join(__dirname, '..', 'public')));
 
 // Endpoint de scraping de preço
 app.get('/api/price', async (req, res) => {
@@ -26,8 +22,16 @@ app.get('/api/price', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Servidor iniciado em http://localhost:${PORT}`);
-});
+// Export para Vercel (serverless)
+module.exports = app;
+
+// Para desenvolvimento local
+if (require.main === module) {
+  const PORT = process.env.PORT || 3000;
+  app.use('/', express.static(path.join(__dirname, '..', 'public')));
+  app.listen(PORT, () => {
+    console.log(`Servidor iniciado em http://localhost:${PORT}`);
+  });
+}
 
 
