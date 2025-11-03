@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Orçamento de PC</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./styles.module.css">
+  <style>
+    :root { color-scheme: light dark; }
+    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif; }
+    .gamer-title { font-family: 'Orbitron', Inter, system-ui, sans-serif; letter-spacing: .5px; }
+    .bg-grid {
+      background: radial-gradient(1200px 600px at 10% -10%, rgba(139,92,246,.25), transparent 60%),
+                  radial-gradient(1200px 600px at 100% 120%, rgba(16,185,129,.18), transparent 60%),
+                  linear-gradient(180deg, #0b0e14 0%, #0b0e14 100%);
+    }
+    .glass { backdrop-filter: blur(10px); background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(148,163,184,.15); }
+    .card { box-shadow: 0 20px 40px rgba(0,0,0,0.35); }
+    .btn-primary { @apply inline-flex items-center justify-center rounded-md bg-violet-600 text-white font-semibold transition-colors shadow shadow-violet-900/40 hover:bg-violet-500 hover:shadow-violet-500/30; }
+    .btn-secondary { @apply rounded-md border border-slate-600 text-slate-200 hover:bg-slate-800 transition-colors; }
+    .input { @apply w-full h-12 rounded-md border border-slate-600 bg-slate-900/60 text-slate-100 px-3 focus:outline-none focus:ring-2 focus:ring-violet-500; }
+    /* Remover setas do input number */
+    input[type=number]::-webkit-outer-spin-button,
+    input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type=number] { -moz-appearance: textfield; }
+    .table thead th { @apply text-slate-400 font-medium; }
+    .table tbody tr { @apply border-t border-slate-700/60; }
+    .table tbody tr:hover { @apply bg-slate-900/50; }
+    .kbd { @apply px-1.5 py-0.5 rounded border border-slate-600 bg-slate-800 text-slate-300 text-[11px]; }
+  </style>
+  <meta name="color-scheme" content="light dark">
+</head>
+<body class="bg-grid text-slate-100">
+  <div class="max-w-7xl mx-auto p-6">
+    <header class="mb-8 flex items-center justify-between">
+      <div>
+        <h1 class="gamer-title text-3xl md:text-4xl font-bold" style="color:var(--accent)">BudgetHub</h1>
+        <p class="text-slate-400 mt-1">Organize orçamentos de qualquer coisa com links e preços atualizados.</p>
+      </div>
+      <nav class="hidden md:flex items-center gap-4 text-sm text-slate-300">
+        <a href="#features" class="hover:text-white">Recursos</a>
+        <a href="#builder" class="hover:text-white">Criar orçamento</a>
+        <a href="#whatsapp" class="hover:text-white">WhatsApp</a>
+        <a href="#donate" class="hover:text-white">Doar</a>
+      </nav>
+    </header>
+
+    <section id="hero" class="mb-12">
+      <div class="grid md:grid-cols-12 gap-6 items-center">
+        <div class="md:col-span-7">
+          <h2 class="text-3xl md:text-5xl font-semibold leading-tight">Monte orçamentos profissionais com visual moderno</h2>
+          <p class="text-slate-400 mt-4">Cole links de produtos/serviços, o sistema coleta os preços e apresenta o total instantaneamente. Ideal para PCs, compras do dia a dia, projetos e eventos.</p>
+          <div class="mt-6 flex gap-3">
+            <a href="#builder" class="btn-primary px-5 h-12 rounded-md inline-flex items-center">Começar agora</a>
+            <a href="#features" class="btn-secondary px-5 h-12 rounded-md inline-flex items-center">Ver recursos</a>
+          </div>
+          <div class="mt-6 glass rounded-xl p-4 border-2" style="border-color:var(--accent)">
+            <p class="text-slate-300 text-sm mb-1">Doe qualquer valor no PIX para</p>
+            <p class="text-xl font-bold" style="color:var(--accent)">ghostclow@gmail.com</p>
+          </div>
+        </div>
+        <div class="md:col-span-5">
+          <div class="overflow-hidden rounded-2xl shadow-xl hero-image-wrapper">
+            <img alt="Hero" class="hero-image" src="https://images.unsplash.com/photo-1550525811-e5869dd03032?q=80&w=1200&auto=format&fit=crop" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="mb-10">
+      <div class="grid md:grid-cols-3 gap-4">
+        <div class="glass rounded-xl p-4">
+          <h3 class="font-semibold mb-1" style="color:var(--accent)">Coleta automática</h3>
+          <p class="text-slate-400 text-sm">Busca de preço via dados estruturados, metatags e heurísticas para parcelas.</p>
+        </div>
+        <div class="glass rounded-xl p-4">
+          <h3 class="font-semibold mb-1" style="color:var(--accent)">Exportar/Importar</h3>
+          <p class="text-slate-400 text-sm">Salve seu orçamento em JSON e continue depois.</p>
+        </div>
+        <div class="glass rounded-xl p-4">
+          <h3 class="font-semibold mb-1" style="color:var(--accent)">Somatório instantâneo</h3>
+          <p class="text-slate-400 text-sm">Totais à vista e parcelado sempre visíveis.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="gallery" class="mb-12">
+      <div class="grid md:grid-cols-3 gap-4">
+        <img alt="galeria 1" class="gallery-img" src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=1200&auto=format&fit=crop" />
+        <img alt="galeria 2" class="gallery-img" src="https://images.unsplash.com/photo-1557264337-e8a93017fe92?q=80&w=1200&auto=format&fit=crop" />
+        <img alt="galeria 3" class="gallery-img" src="https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?q=80&w=1200&auto=format&fit=crop" />
+      </div>
+    </section>
+
+    <section id="how" class="mb-12">
+      <h3 class="gamer-title text-2xl mb-4">Como funciona</h3>
+      <div class="grid md:grid-cols-3 gap-4">
+        <div class="glass rounded-xl p-4">
+          <div class="text-3xl" style="color:var(--accent)">1</div>
+          <div class="mt-1 font-semibold">Cole os links</div>
+          <p class="text-slate-400 text-sm">De qualquer loja. Suportamos páginas com JSON-LD, metatags e texto de parcelas.</p>
+        </div>
+        <div class="glass rounded-xl p-4">
+          <div class="text-3xl" style="color:var(--accent)">2</div>
+          <div class="mt-1 font-semibold">Capturamos os preços</div>
+          <p class="text-slate-400 text-sm">Preço à vista e total parcelado, com inferências quando necessário.</p>
+        </div>
+        <div class="glass rounded-xl p-4">
+          <div class="text-3xl" style="color:var(--accent)">3</div>
+          <div class="mt-1 font-semibold">Veja o total</div>
+          <p class="text-slate-400 text-sm">Totais atualizados, exporte em JSON e compartilhe.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="builder" class="builder module-form">
+      <div class="mb-4">
+        <h3 class="gamer-title text-2xl builderTitle">Criar orçamento</h3>
+        <p class="text-slate-400 text-sm mt-1">Adicione itens com URL e quantidade. Buscamos preços e somamos automaticamente.</p>
+      </div>
+      <div class="formGrid">
+        <div>
+          <label class="text-slate-400 text-xs">Nome (opcional)</label>
+          <input id="name" class="input" placeholder="Ex.: Memória RAM" />
+        </div>
+        <div>
+          <label class="text-slate-400 text-xs">URL do produto</label>
+          <div class="faviconWrap">
+            <input id="url" class="input inputWithIcon" placeholder="https://www.exemplo.com/produto" />
+            <img id="urlFavicon" alt="favicon" class="faviconImg" />
+          </div>
+        </div>
+        <div>
+          <label class="text-slate-400 text-xs">Categoria</label>
+          <input id="category" class="input" placeholder="Ex.: GPU, Serviço" />
+        </div>
+        <div>
+          <label class="text-slate-400 text-xs">Qtd</label>
+          <input id="qty" type="number" min="1" value="1" class="input qty" />
+        </div>
+        <div>
+          <button id="addBtn" class="btnPrimary addBtn">Adicionar</button>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <button id="tabItemsBtn" class="tab tabActive">Itens</button>
+        <button id="tabSummaryBtn" class="tab">Resumo</button>
+      </div>
+
+      <div id="panel-items" class="panel">
+        <section class="module-table tableWrap">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="gamer-title text-xl">Itens</h2>
+            <div class="flex gap-2">
+              <button id="refreshBtn" class="btnSecondary" style="height:40px">Atualizar preços</button>
+              <button id="exportBtn" class="btnSecondary" style="height:40px">Exportar JSON</button>
+              <label class="btnSecondary" style="height:40px; align-items:center; display:inline-flex; cursor:pointer">Importar JSON/CSV
+                <input id="importInput" type="file" accept="application/json,text/csv" class="hidden" />
+              </label>
+              <button id="shareBtn" class="btnSecondary" style="height:40px">Compartilhar link</button>
+            </div>
+          </div>
+          <div class="tableWrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Categoria</th>
+                  <th>Produto</th>
+                  <th>URL</th>
+                  <th>Qtd</th>
+                  <th>À vista (PIX)</th>
+                  <th>Total parcelado</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="itemsBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <div id="panel-summary" class="panel" style="display:none">
+        <div class="statsGrid">
+          <div class="statCard">
+            <div class="text-slate-400 text-sm">Total à vista (PIX)</div>
+            <div id="sumVista" class="text-2xl font-bold">R$ 0,00</div>
+          </div>
+          <div class="statCard">
+            <div class="text-slate-400 text-sm">Total parcelado (Cartão)</div>
+            <div id="sumParcelado" class="text-2xl font-bold">R$ 0,00</div>
+          </div>
+          <div class="statCard">
+            <div class="text-slate-400 text-sm">Itens</div>
+            <div id="countItems" class="text-2xl font-bold">0</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="whatsapp" class="mt-10 glass rounded-xl p-4 card">
+      <h3 class="gamer-title text-xl mb-2">Fale no WhatsApp</h3>
+      <p class="text-slate-400 text-sm mb-3">sugestões.</p>
+      <a class="btn-primary px-4 h-11 rounded-md inline-flex items-center" target="_blank" rel="noopener" href="https://wa.me/5548996985310">Abrir WhatsApp</a>
+    </section>
+
+    <section id="donate" class="mt-6 glass rounded-xl p-4 card">
+      <p class="text-slate-400 text-sm">Doe qualquer valor no PIX para <strong class="text-white">ghostclow@gmail.com</strong></p>
+    </section>
+
+    <footer class="mt-8 text-center text-slate-500 text-xs">
+      Dica: cole a URL e pressione <span class="kbd">Enter</span> para adicionar rapidamente. • Paleta teal/cinza em todo o site.
+    </footer>
+  </div>
+
+  <script src="./main.js"></script>
+</body>
+</html>
+
+

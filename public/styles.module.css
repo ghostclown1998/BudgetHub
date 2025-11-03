@@ -1,0 +1,94 @@
+/* Emulação simples de CSS Modules: classes com prefixo module- aplicadas a blocos específicos */
+
+/* Layout global (CSS Module) */
+.site{ background:var(--bg); color:var(--text); }
+.container{ max-width:1200px; margin:0 auto; padding:32px 24px; }
+
+.header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; }
+.brand{ color:var(--accent); font-weight:700; font-size:28px; letter-spacing:.5px; }
+.nav{ display:none; gap:16px; color:#c8d1da; }
+@media (min-width: 768px){ .nav{ display:flex; } }
+.nav a{ text-decoration:none; color:inherit; padding:6px 8px; border-radius:8px; }
+.nav a:hover{ color:#fff; background:rgba(255,255,255,.04); }
+
+/* Hero */
+.hero{ margin-bottom:40px; }
+.heroGrid{ display:grid; grid-template-columns: 1fr; gap:24px; align-items:center; }
+@media (min-width: 900px){ .heroGrid{ grid-template-columns: 7fr 5fr; } }
+.heroTitle{ font-size:32px; line-height:1.2; font-weight:600; }
+@media (min-width: 900px){ .heroTitle{ font-size:44px; } }
+.heroActions{ display:flex; gap:12px; margin-top:18px; }
+.heroImg{ overflow:hidden; border-radius:16px; border:1px solid var(--border); }
+.heroImg img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+/* Botões e inputs */
+.btnPrimary{ display:inline-flex; align-items:center; justify-content:center; height:48px; padding:0 20px; border-radius:10px; background:var(--accent); color:#062226; border:1px solid transparent; font-weight:600; box-shadow:0 6px 16px rgba(17,185,196,.25); }
+.btnPrimary:hover{ background:var(--accent-700); box-shadow:0 8px 22px rgba(17,185,196,.35); }
+.btnSecondary{ display:inline-flex; align-items:center; justify-content:center; height:48px; padding:0 20px; border-radius:10px; background:var(--surface); color:var(--text); border:1px solid var(--border); }
+.btnSecondary:hover{ background:var(--surface-2); }
+.input{ width:100%; height:48px; border-radius:10px; background:var(--surface-2); border:1px solid var(--border); color:var(--text); padding:0 12px; }
+.input:focus{ outline:none; box-shadow:0 0 0 2px var(--accent); border-color:var(--accent); }
+
+/* Seções genéricas */
+.section{ margin-bottom:40px; }
+.featureGrid{ display:grid; gap:16px; grid-template-columns:1fr; }
+@media (min-width:900px){ .featureGrid{ grid-template-columns:repeat(3,1fr); } }
+.featureCard{ background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px; }
+.featureCard h3{ color:var(--accent); margin:0 0 6px 0; font-weight:600; }
+.galleryGrid{ display:grid; gap:16px; grid-template-columns:1fr; }
+@media (min-width:900px){ .galleryGrid{ grid-template-columns:repeat(3,1fr); } }
+.galleryGrid img{ width:100%; height:220px; object-fit:cover; border-radius:12px; border:1px solid var(--border); }
+.howGrid{ display:grid; gap:16px; grid-template-columns:1fr; }
+@media (min-width:900px){ .howGrid{ grid-template-columns:repeat(3,1fr); } }
+.howStep{ background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px; }
+
+/* Builder */
+.builder{ background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:24px; }
+.builderTitle{ font-size:22px; margin:0 0 8px 0; }
+.formGrid{ display:grid; grid-template-columns:minmax(0,3fr) minmax(0,7fr) 1fr 1fr; gap:12px; align-items:end; }
+@media (max-width:768px){ .formGrid{ grid-template-columns:1fr; } }
+.faviconWrap{ position:relative; }
+.faviconImg{ position:absolute; left:12px; top:50%; transform:translateY(-50%); width:20px; height:20px; border-radius:4px; pointer-events:none; }
+.inputWithIcon{ padding-left:44px; }
+.qty{ text-align:center; }
+.addBtn{ width:100%; height:48px; }
+
+/* Tabs */
+.tabs{ display:flex; gap:8px; border-bottom:1px solid var(--border); margin-top:20px; }
+.tab{ background:transparent; color:var(--muted); border:none; height:40px; padding:0 14px; cursor:pointer; border-radius:8px 8px 0 0; }
+.tab:hover{ color:var(--text); background:rgba(255,255,255,.04); }
+.tabActive{ color:var(--text); background:var(--surface-2); }
+.panel{ margin-top:16px; }
+
+/* Tabela */
+.tableWrap{ overflow:auto; }
+.table{ width:100%; font-size:14px; border-collapse:separate; border-spacing:0; }
+.table thead{ background:var(--surface-2); position:sticky; top:0; }
+.table th, .table td{ padding:8px; text-align:left; border-top:1px solid var(--border); }
+.table tbody tr:hover{ background:rgba(17,185,196,.06); }
+.removeBtn{ border:1px solid var(--border); background:var(--surface); color:var(--text); border-radius:8px; padding:6px 10px; }
+.removeBtn:hover{ background:var(--surface-2); }
+.emptyRow{ color:var(--muted); text-align:center; padding:18px 0; }
+
+/* Links longos com reticências */
+.linkEllipsis{
+  display:inline-block;
+  max-width: 160px;
+  overflow:hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #a78bfa; /* violeta suave */
+  text-decoration: underline;
+}
+@media (max-width: 900px){ .linkEllipsis{ max-width: 140px; } }
+
+/* Estatísticas */
+.statsGrid{ display:grid; gap:16px; grid-template-columns:1fr; }
+@media (min-width:900px){ .statsGrid{ grid-template-columns:repeat(3,1fr); } }
+.statCard{ background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px; }
+
+/* Ações */
+.waSection, .donateSection{ background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px; }
+
+
+
